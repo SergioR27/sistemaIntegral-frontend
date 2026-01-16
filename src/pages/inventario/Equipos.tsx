@@ -8,7 +8,7 @@ import Modal from "@/components/Modal";
 import Form from "@/components/Form";
 import { Button } from "@/components/ui/button";
 
-export default function Personal() {
+export default function Equipos() {
 
   type Personal = {
     id: number;
@@ -65,9 +65,7 @@ export default function Personal() {
   const formFields = [
     { name: "nombre", label: "Nombre", type: "text", required: true },
     { name: "apellido", label: "Apellido", type: "text", required: true },
-    { name: "clave", label: "Clave ISSEMYM", type: "text" },
-    { name: "curp", label: "CURP", type: "text" },
-    { name: "email", label: "Correo", type: "email", placeholder: "usuario@correo.com", required: true },
+    { name: "clave", label: "Número Servidor", type: "text" },
 
     {
       name: "sexo",
@@ -75,27 +73,19 @@ export default function Personal() {
       type: "select",
       options: ["MASCULINO", "FEMENINO"],
     },
-    { name: "categoria", label: "Categoría", type: "text" },
-
 
     {
-      name: "sid_departamento",
-      label: "Nombre del Departamento",
+      name: "nivel",
+      label: "Nivel",
       type: "select",
-      options: ["Unidad de Técnologias", "UIPPE", "Dirección General"],
+      options: ["Primaria", "Secundaria", "Preparatoria"],
     },
+
     {
-      name: "sid_municipio",
-      label: "Municipio",
-      type: "select",
-      options: ["Toluca", "Valle de México", "Valle de Toluca"],
-      colSpan: 2
-    },
-    {
-      name: "activo",
-      label: "Usuario activo",
-      type: "checkbox",
-      defaultChecked: true,
+      name: "foto",
+      label: "Foto",
+      type: "file",
+      colSpan: 3, // 👈 ocupa toda la fila en desktop
     },
   ];
 
@@ -107,7 +97,7 @@ export default function Personal() {
 
           {/* HEADER */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Servidores Públicos Registrados</h2>
+            <h2 className="text-lg font-semibold">Dispositivos Registrados</h2>
 
             <Modal
               title=""
@@ -136,11 +126,6 @@ export default function Personal() {
           />
 
 
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          <PersonalCard />
-          <PersonalCard />
-          <PersonalCard />
         </div>
       </div >
     </>

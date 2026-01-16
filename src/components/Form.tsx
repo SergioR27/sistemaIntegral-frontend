@@ -7,15 +7,17 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Field = {
   name: string;
   label: string;
-  type: "text" | "select" | "file";
+  type: "text" | "email" | "select" | "file" | "checkbox";
   placeholder?: string;
   required?: boolean;
   options?: string[];
   colSpan?: number; // 👈 NUEVO
+  defaultChecked?: boolean;
 };
 
 type FormProps = {
@@ -77,6 +79,16 @@ export default function Form({
               />
             )}
 
+            {/* EMAIL */}
+            {field.type === "email" && (
+              <Input
+                type="email"
+                name={field.name}
+                placeholder={field.placeholder}
+                required={field.required}
+              />
+            )}
+
             {/* FILE */}
             {field.type === "file" && (
               <Input
@@ -101,6 +113,20 @@ export default function Form({
                 </SelectContent>
               </Select>
             )}
+
+            {/* CHECKBOX */}
+            {field.type === "checkbox" && (
+              <div className="flex items-center gap-2 pt-2">
+                <Checkbox
+                  name={field.name}
+                  defaultChecked={field.defaultChecked}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {field.label}
+                </span>
+              </div>
+            )}
+
           </div>
         ))}
       </div>

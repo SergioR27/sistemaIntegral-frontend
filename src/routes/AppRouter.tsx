@@ -6,6 +6,7 @@ import Dashboard from "../pages/Dashboard";
 import Personal from "../pages/Personal";
 import Oficios from "@/pages/sic/Oficios";
 import Registros from "@/pages/sic/Registros";
+import Equipos from "@/pages/inventario/Equipos";
 
 export default function AppRouter() {
   return (
@@ -24,6 +25,9 @@ export default function AppRouter() {
           <Route path="/sic">
             <Route path="oficios" element={<Oficios />} />
             <Route path="registros" element={<Registros />} />
+          </Route>
+          <Route path="/inventario">
+            <Route path="equipos" element={<Equipos />} />
           </Route>
         </Route>
 
