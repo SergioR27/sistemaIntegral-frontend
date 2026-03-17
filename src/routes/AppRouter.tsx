@@ -7,6 +7,9 @@ import Personal from "../pages/Personal";
 import Oficios from "@/pages/sic/Oficios";
 import Registros from "@/pages/sic/Registros";
 import Equipos from "@/pages/inventario/Equipos";
+import Organigrama from "@/pages/Organigrama";
+import Asignacion from "@/pages/inventario/Asignacion";
+import Areas from "@/pages/Areas";
 
 export default function AppRouter() {
   return (
@@ -20,7 +23,9 @@ export default function AppRouter() {
 
         {/* DASHBOARD */}
         <Route element={<Layout />}>
+          <Route path="/areas" element={<Areas />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/organigrama" element={<Organigrama />} />
           <Route path="/personal" element={<Personal />} />
           <Route path="/sic">
             <Route path="oficios" element={<Oficios />} />
@@ -28,6 +33,7 @@ export default function AppRouter() {
           </Route>
           <Route path="/inventario">
             <Route path="equipos" element={<Equipos />} />
+            <Route path="asignacion" element={<Asignacion />} />
           </Route>
         </Route>
 

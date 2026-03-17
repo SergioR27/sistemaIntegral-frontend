@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,137 +10,254 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type Field = {
+/* =========================
+   TIPOS
+========================= */
+
+type FieldType =
+  | "text"
+  | "email"
+  | "select"
+  | "file"
+  | "checkbox"
+  | "number"
+  | (string & {});
+
+export type Field = {
   name: string;
   label: string;
-  type: "text" | "email" | "select" | "file" | "checkbox";
+  type: FieldType;
   placeholder?: string;
   required?: boolean;
-  options?: string[];
-  colSpan?: number; // 👈 NUEVO
+  options?: { label: string; value: string | number }[];
+  colSpan?: number;
   defaultChecked?: boolean;
+};
+
+type FormValues = Record<string, any>;
+
+type SubmitResponse = {
+  success: boolean;
+  message?: string;
 };
 
 type FormProps = {
   title?: string;
   fields: Field[];
   columns?: 1 | 2 | 3 | 4;
-  onSubmit?: (values: Record<string, any>) => void;
+  defaultValues?: Record<string, any>;
+  onSubmit: (values: FormValues) => Promise<void>;
 };
+
+/* =========================
+   MAPAS TAILWIND
+========================= */
+
+const gridColsMap = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+};
+
+const colSpanMap = {
+  1: "lg:col-span-1",
+  2: "lg:col-span-2",
+  3: "lg:col-span-3",
+  4: "lg:col-span-4",
+};
+
+
+
+
+/* =========================
+   COMPONENTE
+========================= */
+
+
 
 export default function Form({
   title,
   fields,
   columns = 2,
+  defaultValues,
   onSubmit,
 }: FormProps) {
+  // const [selectValues, setSelectValues] = useState<Record<string, any>>({});
+  // const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // const [selectValues, setSelectValues] = useState<Record<string, any>>(
+  //   defaultValues || {}
+  // );
+
+  const [selectValues, setSelectValues] = useState<Record<string, any>>(
+    Object.fromEntries(
+      Object.entries(defaultValues || {}).map(([k, v]) => [k, String(v)])
+    )
+  );
+
+  const [formValues, setFormValues] = useState(defaultValues || {});
+
+  const [loading, setLoading] = useState(false);
+
+  const isEditing = defaultValues && Object.keys(defaultValues).length > 0;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const data = new FormData(e.currentTarget);
-    const values = Object.fromEntries(data.entries());
+    const formData = new FormData(e.currentTarget);
+    const values = Object.fromEntries(formData.entries());
 
-    onSubmit?.(values);
+    setLoading(true);
+    await onSubmit(values);
+    setLoading(false);
   };
 
+
+  const renderField = (field: Field) => {
+    switch (field.type) {
+      case "text":
+      case "number":
+      case "email":
+        return (
+          <Input
+            type={field.type}
+            name={field.name}
+            placeholder={field.placeholder}
+            defaultValue={defaultValues?.[field.name] ?? ""}
+            required={field.required}
+          />
+        );
+
+      case "file":
+        return <Input type="file" name={field.name} />;
+
+      case "select":
+        return (
+          <>
+            <Select
+              value={selectValues[field.name] ?? ""}
+              onValueChange={(value) =>
+                setSelectValues((prev) => ({
+                  ...prev,
+                  [field.name]: value,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona una opción" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {field.options?.map((opt) => (
+                  <SelectItem key={opt.value} value={String(opt.value)}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <input
+              type="hidden"
+              name={field.name}
+              value={selectValues[field.name] ?? ""}
+              required={field.required}
+            />
+          </>
+        );
+
+      case "checkbox":
+        return (
+          <div className="flex items-center gap-2 pt-2">
+            <Checkbox
+              name={field.name}
+              checked={formValues[field.name] || false}
+              onCheckedChange={(checked) =>
+                setFormValues((prev) => ({
+                  ...prev,
+                  [field.name]: checked,
+                }))
+              }
+            />
+            <span className="text-base text-muted-foreground">
+              {field.label}
+            </span>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  useEffect(() => {
+    if (defaultValues) {
+      setSelectValues(
+        Object.fromEntries(
+          Object.entries(defaultValues).map(([k, v]) => [k, String(v)])
+        )
+      );
+    }
+  }, [defaultValues]);
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+        {title && <h2 className="text-xl font-semibold">{title}</h2>}
 
-      {title && (
-        <h2 className="text-xl font-semibold">{title}</h2>
-      )}
+        <div
+          className={`grid gap-4 grid-cols-1 sm:grid-cols-2 ${gridColsMap[columns]
+            }`}
+        >
+          {fields.map((field) => (
+            <div
+              key={field.name}
+              className={`space-y-2 ${field.colSpan
+                ? colSpanMap[field.colSpan as 1 | 2 | 3 | 4]
+                : ""
+                }`}
+            >
+              {field.type !== "checkbox" && (
+                <label className="text-base text-mist-600">
+                  {field.label}
+                  {field.required && (
+                    <span className="text-red-500"> *</span>
+                  )}
+                </label>
+              )}
 
-      {/* GRID RESPONSIVO */}
-      <div
-        className={`
-          grid gap-4
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-${columns}
-        `}
-      >
-        {fields.map((field) => (
-          <div
-            key={field.name}
-            className={`space-y-1 ${field.colSpan ? `lg:col-span-${field.colSpan}` : ""
+              {renderField(field)}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          {/* <Button
+            type="submit"
+            disabled={loading}
+            className="bg-primario text-white hover:bg-primario-dark"
+          >
+            {loading ? "Guardando..." : "Guardar"}
+          </Button> */}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className={`text-white ${isEditing
+              ? "bg-camel hover:bg-secundario"
+              : "bg-primario hover:bg-primario-dark"
               }`}
           >
-            <label className="text-sm font-medium">
-              {field.label}
-              {field.required && <span className="text-red-500"> *</span>}
-            </label>
-
-            {/* TEXT */}
-            {field.type === "text" && (
-              <Input
-                name={field.name}
-                placeholder={field.placeholder}
-                required={field.required}
-              />
-            )}
-
-            {/* EMAIL */}
-            {field.type === "email" && (
-              <Input
-                type="email"
-                name={field.name}
-                placeholder={field.placeholder}
-                required={field.required}
-              />
-            )}
-
-            {/* FILE */}
-            {field.type === "file" && (
-              <Input
-                type="file"
-                name={field.name}
-                required={field.required}
-              />
-            )}
-
-            {/* SELECT */}
-            {field.type === "select" && (
-              <Select name={field.name}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una opción" />
-                </SelectTrigger>
-                <SelectContent>
-                  {field.options?.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            {/* CHECKBOX */}
-            {field.type === "checkbox" && (
-              <div className="flex items-center gap-2 pt-2">
-                <Checkbox
-                  name={field.name}
-                  defaultChecked={field.defaultChecked}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {field.label}
-                </span>
-              </div>
-            )}
-
-          </div>
-        ))}
-      </div>
-
-      {/* BOTONES */}
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button
-          type="submit"
-          className="bg-primario text-white hover:bg-primario-dark"
-        >
-          Guardar
-        </Button>
-      </div>
-    </form>
+            {loading
+              ? isEditing
+                ? "Actualizando..."
+                : "Guardando..."
+              : isEditing
+                ? "Actualizar"
+                : "Guardar"}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }

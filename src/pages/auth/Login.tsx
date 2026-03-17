@@ -5,54 +5,130 @@ import { Label } from "@/components/ui/label";
 
 export default function Login() {
   return (
-    <div className="min-h-screen w-full flex">
+    <div className="min-h-screen w-full flex font-display bg-background-light">
 
-      {/* IZQUIERDA - 60% IMAGEN */}
+      {/* IZQUIERDA - IMAGEN */}
       <div
         className="
-          hidden
-          lg:block
-          w-[70%]
-          h-screen
-          bg-cover
-          bg-center
-          rounded-r-lg
+          hidden lg:block
+          w-[70%] h-screen
+          bg-cover bg-center
+          rounded-r-xl
         "
         style={{
           backgroundImage: "url('/src/assets/fondo.png')",
         }}
       />
 
-      {/* DERECHA - 40% LOGIN */}
-      <div className="w-full lg:w-[40%] h-screen flex items-center justify-center bg-grisClaro">
+      {/* DERECHA - LOGIN */}
+      <div className="w-full lg:w-[40%] h-screen flex items-center justify-center px-6">
 
-        <Card className="w-full max-w-[420px] mx-6 bg-white rounded-xl shadow-xl border border-primario/20">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primario">
+        <Card className="w-full max-w-[480px] bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+
+          {/* Header institucional */}
+          <CardHeader className="pt-10 pb-6 text-center space-y-3">
+            <div className="mx-auto w-24 h-24 rounded-full bg-primario/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primario icon-xl">
+                account_balance
+              </span>
+            </div>
+
+            <p className="text-gray-500 text-sm font-semibold tracking-widest uppercase">
+              Sistema Administrativo
+            </p>
+
+            <CardTitle className="text-[32px] font-bold tracking-tight text-primario-dark">
               Iniciar Sesión
             </CardTitle>
-            <p className="text-sm text-gray-500">
-              Accede a tu cuenta
-            </p>
           </CardHeader>
 
-          <CardContent className="space-y-5">
-            <div className="space-y-1">
-              <Label>Correo</Label>
-              <Input placeholder="usuario@correo.com" />
+          {/* Formulario */}
+          <CardContent className="px-8 pb-10 space-y-6">
+
+            {/* Usuario */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold text-primario-dark">
+                Correo
+              </Label>
+
+              <div className="flex group">
+                <div className="
+                  flex items-center justify-center
+                  px-4 rounded-l-lg
+                  border border-r-0 border-[#e4dcdf]
+                  text-gray-400
+                  group-focus-within:text-primario
+                  transition-colors
+                ">
+                  <span className="material-symbols-outlined">person</span>
+                </div>
+
+                <Input
+                  className="
+                    h-14 rounded-l-none
+                    border-[#e4dcdf]
+                    focus:border-primario
+                    focus:ring-2 focus:ring-primario/20
+                    placeholder:text-[#85666e]
+                    text-base
+                  "
+                  placeholder="Ingrese su correo"
+                />
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <Label>Contraseña</Label>
-              <Input type="password" placeholder="••••••••" />
+            {/* Contraseña */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold text-primario-dark">
+                Contraseña
+              </Label>
+
+              <div className="flex group">
+                <div className="
+                  flex items-center justify-center
+                  px-4 rounded-l-lg
+                  border border-r-0 border-[#e4dcdf]
+                  text-gray-400
+                  group-focus-within:text-primario
+                  transition-colors
+                ">
+                  <span className="material-symbols-outlined">lock</span>
+                </div>
+
+                <Input
+                  type="password"
+                  className="
+                    h-14 rounded-l-none
+                    border-[#e4dcdf]
+                    focus:border-primario
+                    focus:ring-2 focus:ring-primario/20
+                    placeholder:text-[#85666e]
+                    text-base
+                  "
+                  placeholder="Ingrese su contraseña"
+                />
+              </div>
             </div>
 
-            <Button className="w-full bg-primario hover:bg-primario-dark text-white">
-              Acceder
+            {/* Botón */}
+            <Button
+              className="
+                w-full h-14
+                bg-primario hover:bg-primario-dark
+                text-white text-lg font-bold
+                tracking-wide
+                shadow-md shadow-primario/20
+                transition-colors
+              "
+            >
+              Entrar
             </Button>
-          </CardContent>
-        </Card>
 
+          </CardContent>
+
+          {/* Barra inferior institucional */}
+          <div className="h-2 w-full bg-gradient-to-r from-primario via-[#b32d4e] to-primario" />
+        </Card>
       </div>
     </div>
   );

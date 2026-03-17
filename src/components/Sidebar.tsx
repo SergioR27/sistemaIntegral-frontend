@@ -9,7 +9,7 @@ const linkBase = `
   rounded-l-full
 `;
 
-const linkActive = "bg-grisClaro text-primario shadow-xl";
+const linkActive = "bg-grisClaro text-primario shadow-xl dark:bg-oscuro-fondo dark:text-grisClaro";
 const linkInactive = "text-grisClaro hover:bg-grisClaro/10";
 
 export default function Sidebar({
@@ -23,8 +23,14 @@ export default function Sidebar({
     <aside
       className={`
         fixed top-0 left-0 z-50 h-screen w-75
-        bg-gradient-to-b from-primario to-primario-dark
-        text-white rounded-r-lg
+        bg-gradient-to-b
+        from-primario to-primario-dark
+        dark:from-oscuro-menu dark:to-oscuro-menu
+        text-white
+        rounded-r-lg
+        overflow-hidden
+        shadow-[inset_-1px_0_0_rgba(0,0,0,0.4)]
+        dark:shadow-[inset_-1px_0_0_rgba(0,0,0,0.6)]
         transform transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0
@@ -44,20 +50,19 @@ export default function Sidebar({
 
       <nav className="mt-6 pl-3 space-y-6">
         <SidebarLink to="/dashboard" icon="dashboard" label="Dashboard" />
-
+        <Section title="Personal">
+          <SidebarLink to="/areas" icon="category" label="Departamentos" />
+          <SidebarLink to="/personal" icon="groups" label="Personal" />
+          <SidebarLink to="/organigrama" icon="account_tree" label="Organigrama" />
+        </Section>
+        <Section title="Inventario">
+          <SidebarLink to="/inventario/equipos" icon="devices" label="Equipos" />
+          <SidebarLink to="/inventario/asignacion" icon="assignment_add" label="Asignación" />
+        </Section>
         <Section title="SIC">
           <SidebarLink to="/sic/oficios" icon="description" label="Oficios" />
           <SidebarLink to="/sic/registros" icon="folder" label="Registros" />
         </Section>
-
-        <Section title="Inventario">
-          <SidebarLink to="/inventario/equipos" icon="devices" label="Equipos" />
-        </Section>
-
-        <Section title="Personal">
-          <SidebarLink to="/personal" icon="groups" label="Personal" />
-        </Section>
-
       </nav>
     </aside>
   );

@@ -17,7 +17,7 @@ export default function Layout() {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 z-0 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -25,7 +25,7 @@ export default function Layout() {
       <div className="min-h-screen flex flex-col">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 p-6 bg-grisClaro md:ml-72">
+        <main className="flex-1 bg-grisClaro md:ml-72 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-3 dark:bg-oscuro-fondo">
           <Outlet />
         </main>
 

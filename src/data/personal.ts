@@ -24,4 +24,28 @@ export const personalData = [
     estado: "Activo",
     avatar: "",
   },
+  {
+    id: 4,
+    nombre: "Sergio Aguilar",
+    rol: "Administrador",
+    area: "Sistemas",
+    estado: "Activo",
+    avatar: "/avatars/sergio.jpg",
+  },
+  {
+    id: 5,
+    nombre: "María López",
+    rol: "Capturista",
+    area: "Inventario",
+    estado: "Inactivo",
+    avatar: "",
+  },
+  {
+    id: 6,
+    nombre: "Juan Pérez",
+    rol: "Capturista",
+    area: "Inventario",
+    estado: "Activo",
+    avatar: "",
+  },
 ];

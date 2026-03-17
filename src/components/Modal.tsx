@@ -4,24 +4,31 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
 type ModalProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   title: string;
+  description?: string; // 👈 agregar esto
   trigger: React.ReactNode;
   children: React.ReactNode;
-  className?: string; // más flexible que maxWidth
+  className?: string;
 };
 
 export default function Modal({
+  open,
+  onOpenChange,
   title,
+  description,
   trigger,
   children,
   className = "",
 }: ModalProps) {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
@@ -35,11 +42,19 @@ export default function Modal({
           xl:max-w-5xl
           max-h-[80vh]
           overflow-y-auto
+          dark:bg-oscuro-relleno
+          dark:border-oscuro-redondear
           ${className}
         `}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+
+          {description && (
+            <DialogDescription>
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
 
         {children}
