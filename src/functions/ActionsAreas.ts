@@ -46,7 +46,7 @@ export const obtenerPadres = async () => {
   try {
 
     const response = await areaBase.getAll({
-      parent_id_is_null: true,
+      // parent_id_is_null: true,
     });
 
     return response.data;

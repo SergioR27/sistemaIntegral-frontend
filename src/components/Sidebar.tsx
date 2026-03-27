@@ -56,6 +56,7 @@ export default function Sidebar({
           <SidebarLink to="/organigrama" icon="account_tree" label="Organigrama" />
         </Section>
         <Section title="Inventario">
+          <SidebarLink to="/inventario/catalogo" icon="book" label="Catálogo" />
           <SidebarLink to="/inventario/equipos" icon="devices" label="Equipos" />
           <SidebarLink to="/inventario/asignacion" icon="assignment_add" label="Asignación" />
         </Section>

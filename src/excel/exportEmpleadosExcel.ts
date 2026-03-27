@@ -103,12 +103,14 @@ export const exportEmpleadosExcel = async (data: any[], fileName: string) => {
       apellidos: e.apellidos,
       area: e.area?.nombre_area,
       categoria: e.categoria,
-      correo: e.correo ? e.correo : 'Pendiente',
+      correo: e.correo ? e.correo : "Pendiente",
       curp: e.curp,
-      nip_issemyn: "'" + e.nip_issemyn,
+      nip_issemyn: e.nip_issemyn,
       municipio: e.municipio,
       estatus: e.estatus,
     });
+
+    row.getCell("nip_issemyn").numFmt = "@";
 
     row.eachCell((cell) => {
       cell.border = {

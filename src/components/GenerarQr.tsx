@@ -7,6 +7,7 @@ export async function generarQR(token: string) {
     height: 290,
     data: `http://sistemas.imife.gob.mx:8088/ServidoresPublicos/${token}`,
     image: "/SO.png",
+    margin: 2,
     dotsOptions: {
       color: "#000000",
       type: "extra-rounded"

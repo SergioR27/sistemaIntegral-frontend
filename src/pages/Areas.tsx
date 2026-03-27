@@ -160,8 +160,13 @@ export default function Areas() {
     const result = await action;
 
     if (result.success) {
+
       await showAlert("success", result.message, "Éxito");
       await cargarAreas();
+
+      const padres = await obtenerPadres();
+      setJerarquia(padres);
+
     } else {
       await showAlert("error", result.message);
     }

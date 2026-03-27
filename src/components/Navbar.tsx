@@ -17,11 +17,11 @@ const routeTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/sic/oficios": "SIC / Oficios",
   "/sic/registros": "SIC / Registros",
+  "/inventario/catalogo": "Inventario / Catálogos",
   "/inventario/equipos": "Inventario / Equipos",
   "/inventario/asignacion": "Inventario / Asignación",
   "/personal": "Personal",
   "/organigrama": "Organigrama",
-  "/catalogo": "Catálogo ",
 };
 
 export default function Navbar({
