@@ -11,7 +11,7 @@ import { X, Mail, MapPin, IdCard, BadgeCheck } from "lucide-react";
 import QRCard from "./QRCard";
 
 type Props = {
-  empleado: Empleado;
+  empleado: any;
   onClose: () => void;
 };
 // type Estatus = "activo" | "baja" | "licencia";

@@ -8,9 +8,9 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { CheckCircle, XCircle, Info, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Info, Trash2, AlertTriangle } from "lucide-react";
 
-type AlertType = "success" | "error" | "info" | "delete";
+type AlertType = "success" | "error" | "info" | "delete" | "warning";
 
 type AlertsProps = {
   open: boolean;
@@ -46,6 +46,10 @@ export default function Alerts({
     delete: {
       icon: <Trash2 className="w-14 h-14 text-red-500" />,
       button: "bg-red-600 hover:bg-red-700",
+    },
+    warning: {
+      icon: <AlertTriangle className="w-14 h-14 text-yellow-500" />,
+      button: "bg-yellow-500 hover:bg-yellow-600 text-white",
     },
   };
 

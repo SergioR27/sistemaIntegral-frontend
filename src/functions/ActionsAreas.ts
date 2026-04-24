@@ -70,6 +70,7 @@ export const handleDelete = async (id: any) => {
     };
 
   } catch (error) {
+
     console.error("Error al eliminar área", error);
     throw error;
   }

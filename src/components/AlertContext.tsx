@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import Alerts from "@/components/Alerts";
 
-type AlertType = "success" | "error" | "info" | "delete";
+type AlertType = "success" | "error" | "info" | "delete" | "warning";
 
 type AlertContextType = {
   showAlert: (

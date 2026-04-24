@@ -10,6 +10,8 @@ export const createCrudService = (endpoint: string) => {
 
       return api.get(endpoint, { params });
     },
+    get: (url: string, params?: any) =>
+      api.get(`${endpoint}${url}`, { params }),
 
     getById: (id: number | string) =>
       api.get(`${endpoint}/${id}`),

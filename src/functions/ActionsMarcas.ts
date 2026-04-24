@@ -33,7 +33,7 @@ export const handleSave = async (data: any) => {
     };
 
   } catch (error: any) {
-    console.error("Error al crear marca:", error);
+    // console.error("Error al crear marca:", error);
 
     return {
       success: false,
@@ -60,3 +60,27 @@ export const handleDelete = async (id: any) => {
     throw error;
   }
 }
+
+export const updateMarca = async (id: number, data: any) => {
+  try {
+
+    console.log(data)
+
+    const response = await marcaBase.update(id, data);
+
+    return {
+      success: true,
+      message: "Marca actualizada correctamente",
+      data: response.data,
+    };
+
+  } catch (error: any) {
+    console.error("Error al actualizar marca:", error);
+
+    return {
+      success: false,
+      message:
+        error.response?.data?.message || "Error al actualizar marca",
+    };
+  }
+};

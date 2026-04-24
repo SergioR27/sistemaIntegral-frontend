@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,6 +36,7 @@ export type Field = {
   defaultChecked?: boolean;
   showPreview?: boolean;
   allowDeleteFile?: boolean;
+  disabled?: boolean;
 };
 
 type FormValues = Record<string, any>;
@@ -53,6 +54,9 @@ type FormProps = {
   // onSubmit: (values: FormValues) => Promise<void>;
   // onSubmit: (formData: FormData) => Promise<void>;
   onSubmit: (data: FormData | Record<string, any>) => Promise<void>;
+  onChange?: (values: Record<string, any>) => void;
+  hideSubmit?: boolean;
+  onValidate?: (validateFn: () => boolean) => void;
 };
 
 /* =========================
@@ -88,6 +92,9 @@ export default function Form({
   columns = 2,
   defaultValues,
   onSubmit,
+  onChange,
+  hideSubmit,
+  onValidate,
 }: FormProps) {
   // const [selectValues, setSelectValues] = useState<Record<string, any>>({});
   // const [loading, setLoading] = useState(false);
@@ -110,6 +117,9 @@ export default function Form({
 
   const [searchValues, setSearchValues] = useState<Record<string, string>>({});
   const [openAutocomplete, setOpenAutocomplete] = useState<Record<string, boolean>>({});
+  const formRef = useRef<HTMLFormElement>(null);
+
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -133,11 +143,27 @@ export default function Form({
     setLoading(false);
   };
 
+  useEffect(() => {
+    onValidate?.(() => formRef.current?.reportValidity() ?? true);
+  }, [onValidate]);
+
+  // const handleChange = (name: any, value: any) => {
+  //   setFormValues((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
+
   const handleChange = (name: any, value: any) => {
-    setFormValues((prev) => ({
-      ...prev,
+    const updated = {
+      ...formValues,
       [name]: value,
-    }));
+    };
+
+    setFormValues(updated);
+
+    // 👇 ESTO ES LO NUEVO
+    onChange?.(updated);
   };
 
   const handleDeleteFile = (fieldName: string) => {
@@ -153,6 +179,8 @@ export default function Form({
     }));
   };
 
+
+
   const renderField = (field: Field) => {
     switch (field.type) {
       case "text":
@@ -165,6 +193,8 @@ export default function Form({
             placeholder={field.placeholder}
             defaultValue={defaultValues?.[field.name] ?? ""}
             required={field.required}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            disabled={field.disabled}
           />
         );
 
@@ -236,13 +266,20 @@ export default function Form({
         return (
           <>
             <Select
-              value={selectValues[field.name] ?? ""}
-              onValueChange={(value) =>
+              value={formValues[field.name] ? String(formValues[field.name]) : ""}
+              onValueChange={(value) => {
+                const isNumber =
+                  typeof field.options?.[0]?.value === "number";
+
+                const finalValue = isNumber ? Number(value) : value;
+
                 setSelectValues((prev) => ({
                   ...prev,
-                  [field.name]: value,
-                }))
-              }
+                  [field.name]: String(finalValue),
+                }));
+
+                handleChange(field.name, finalValue);
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona una opción" />
@@ -261,7 +298,7 @@ export default function Form({
               type="hidden"
               name={field.name}
               value={selectValues[field.name] ?? ""}
-              required={field.required}
+              required={field.required && !field.disabled}
             />
           </>
         );
@@ -272,6 +309,7 @@ export default function Form({
             <Checkbox
               name={field.name}
               checked={formValues[field.name] || false}
+              disabled={field.disabled}
               onCheckedChange={(checked) =>
                 setFormValues((prev) => ({
                   ...prev,
@@ -292,6 +330,8 @@ export default function Form({
             name={field.name}
             defaultValue={defaultValues?.[field.name] ?? ""}
             required={field.required}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            disabled={field.disabled}
           />
         );
 
@@ -344,6 +384,7 @@ export default function Form({
               type="text"
               placeholder="Escribe para buscar..."
               value={searchValues[field.name] ?? ""}
+              disabled={field.disabled}
               onChange={(e) =>
                 setSearchValues((prev) => ({
                   ...prev,
@@ -367,7 +408,7 @@ export default function Form({
             />
 
             {showOptions && (
-              <div className="absolute z-50 bg-white border w-full max-h-60 overflow-y-auto rounded shadow">
+              <div className="absolute z-50 bg-white dark:bg-oscuro-fondo border w-full max-h-60 overflow-y-auto rounded shadow">
                 {filteredOptions?.length === 0 && (
                   <div className="p-2 text-gray-400">Sin resultados</div>
                 )}
@@ -375,8 +416,12 @@ export default function Form({
                 {filteredOptions?.map((opt) => (
                   <div
                     key={opt.value}
-                    className="p-2 hover:bg-blue-100 cursor-pointer"
+                    className="p-2 hover:bg-red-100 dark:hover:bg-oscuro-menu  cursor-pointer"
                     onClick={() => {
+
+                      const finalValue = typeof opt.value === "number" ? Number(opt.value) : opt.value;
+
+
                       setSelectValues((prev) => ({
                         ...prev,
                         [field.name]: String(opt.value),
@@ -391,6 +436,8 @@ export default function Form({
                         ...prev,
                         [field.name]: false,
                       }));
+
+                      handleChange(field.name, finalValue);
                     }}
                   >
                     {opt.label}
@@ -403,7 +450,7 @@ export default function Form({
               type="hidden"
               name={field.name}
               value={selectedValue ?? ""}
-              required={field.required}
+              required={field.required && !field.disabled}
             />
           </div>
         );
@@ -509,7 +556,7 @@ export default function Form({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {title && <h2 className="text-xl font-semibold">{title}</h2>}
 
         <div
@@ -547,22 +594,24 @@ export default function Form({
             {loading ? "Guardando..." : "Guardar"}
           </Button> */}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className={`text-white ${isEditing
-              ? "bg-camel hover:bg-secundario"
-              : "bg-primario hover:bg-primario-dark"
-              }`}
-          >
-            {loading
-              ? isEditing
-                ? "Actualizando..."
-                : "Guardando..."
-              : isEditing
-                ? "Actualizar"
-                : "Guardar"}
-          </Button>
+          {!hideSubmit && (
+            <Button
+              type="submit"
+              disabled={loading}
+              className={`text-white ${isEditing
+                ? "bg-camel hover:bg-secundario"
+                : "bg-primario hover:bg-primario-dark"
+                }`}
+            >
+              {loading
+                ? isEditing
+                  ? "Actualizando..."
+                  : "Guardando..."
+                : isEditing
+                  ? "Actualizar"
+                  : "Guardar"}
+            </Button>
+          )}
         </div>
       </form>
     </>
