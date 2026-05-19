@@ -19,7 +19,7 @@ const routeTitles: Record<string, string> = {
   "/sic/registros": "SIC / Registros",
   "/inventario/catalogo": "Inventario / Catálogos",
   "/inventario/equipos": "Inventario / Equipos",
-  "/inventario/asignacion": "Inventario / Asignación",
+  "/tickets/servicio": "Tickets / Servicio",
   "/personal": "Personal",
   "/organigrama": "Organigrama",
 };

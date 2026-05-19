@@ -8,7 +8,7 @@ import Oficios from "@/pages/sic/Oficios";
 import Registros from "@/pages/sic/Registros";
 import Equipos from "@/pages/inventario/Equipos";
 import Organigrama from "@/pages/Organigrama";
-import Asignacion from "@/pages/inventario/Asignacion";
+import Servicio from "@/pages/tickets/Servicio";
 import Areas from "@/pages/Areas";
 import Catalogos from "@/pages/inventario/Catalogos";
 
@@ -32,10 +32,14 @@ export default function AppRouter() {
             <Route path="oficios" element={<Oficios />} />
             <Route path="registros" element={<Registros />} />
           </Route>
+          <Route path="/tickets">
+            <Route path="servicio" element={<Servicio />} />
+          </Route>
+
           <Route path="/inventario">
             <Route path="catalogo" element={<Catalogos />} />
             <Route path="equipos" element={<Equipos />} />
-            <Route path="asignacion" element={<Asignacion />} />
+            {/* <Route path="asignacion" element={<Asignacion />} /> */}
           </Route>
         </Route>
 

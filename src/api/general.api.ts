@@ -50,7 +50,7 @@ export const createCrudService = (endpoint: string) => {
       );
     },
 
-    delete: (id: number | string) =>
-      api.delete(`${endpoint}/${id}`),
+    delete: (id: number | string, config: any = {}) =>
+      api.delete(`${endpoint}/${id}`, config),
   };
 };

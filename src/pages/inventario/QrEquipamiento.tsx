@@ -1,62 +1,115 @@
-import { useEffect, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import QRCodeStyling from "qr-code-styling";
+import { toPng } from "html-to-image";
+
+export type QrEquipamientoHandle = {
+  download: () => Promise<void>;
+};
 
 type Props = {
-  codigo: string; // 👈 CTRL-IMIFE-0001
+  codigo: string;
   size?: number;
 };
 
-export default function QrEquipamiento({ codigo, size = 150 }: Props) {
+const QrEquipamiento = forwardRef<QrEquipamientoHandle, Props>(
+  ({ codigo, size = 150 }, ref) => {
+    const qrRef = useRef<HTMLDivElement | null>(null);
+    const qrDownloadRef = useRef<HTMLDivElement | null>(null);
+    const qrInstance = useRef<any>(null);
+    const qrDownloadInstance = useRef<any>(null);
 
-  const qrRef = useRef<HTMLDivElement | null>(null);
-  const qrInstance = useRef<any>(null);
+    useEffect(() => {
+      if (!codigo || !qrRef.current || !qrDownloadRef.current) return;
 
-  useEffect(() => {
-    if (!codigo) return;
-
-    // limpiar
-    if (qrRef.current) {
       qrRef.current.innerHTML = "";
-    }
+      qrDownloadRef.current.innerHTML = "";
 
-    // 🔥 URL FINAL
-    const url = `http://sar.imife.gob.mx/?id=${codigo}&SDERT`;
+      const url = `http://sar.imife.gob.mx/?id=${codigo}&SDERT`;
 
-    qrInstance.current = new QRCodeStyling({
-      width: size,
-      height: size,
-      data: url,
+      qrInstance.current = new QRCodeStyling({
+        width: size,
+        height: size,
+        data: url,
+        dotsOptions: {
+          color: "#000000",
+          type: "extra-rounded",
+        },
+        backgroundOptions: {
+          color: "#ffffff",
+        },
+      });
 
-      dotsOptions: {
-        color: "#000000",
-        type: "extra-rounded",
+      qrDownloadInstance.current = new QRCodeStyling({
+        width: size,
+        height: size,
+        data: url,
+        dotsOptions: {
+          color: "#000000",
+          type: "extra-rounded",
+        },
+        backgroundOptions: {
+          color: "#ffffff",
+        },
+      });
+
+      qrInstance.current.append(qrRef.current);
+      qrDownloadInstance.current.append(qrDownloadRef.current);
+    }, [codigo, size]);
+
+    useImperativeHandle(ref, () => ({
+      download: async () => {
+        const node = document.getElementById(`qr-export-${codigo}`);
+        if (!node) return;
+
+        const dataUrl = await toPng(node, {
+          cacheBust: true,
+          backgroundColor: "#ffffff",
+          skipFonts: true,
+        });
+
+        const link = document.createElement("a");
+        link.download = `${codigo}.png`;
+        link.href = dataUrl;
+        link.click();
       },
+    }));
 
-      backgroundOptions: {
-        color: "#ffffff",
-      },
+    return (
+      <>
+        {/* Vista en pantalla */}
+        <div className="bg-white dark:bg-oscuro-fondo rounded-2xl shadow p-2 flex flex-col items-center">
+          <div className="bg-white rounded-lg">
+            <div ref={qrRef}></div>
+          </div>
 
-      imageOptions: {
-        crossOrigin: "anonymous",
-        margin: 0,
-      },
-    });
+          <p className="text-xs text-gray-400">
+            {codigo}
+          </p>
+        </div>
 
-    qrInstance.current.append(qrRef.current);
+        {/* Vista para descarga */}
+        <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+          <div
+            id={`qr-export-${codigo}`}
+            className="bg-white p-2 flex flex-col items-center"
+          >
+            <div className="bg-white">
+              <div ref={qrDownloadRef}></div>
+            </div>
 
-  }, [codigo, size]);
+            <p className="text-sm text-gray-500 mt-1">
+              {codigo}
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
+);
 
-  return (
-    <div className="bg-white dark:bg-oscuro-fondo rounded-2xl shadow p-4 flex flex-col items-center">
-
-      <div className="bg-white p-3 rounded-lg">
-        <div ref={qrRef}></div>
-      </div>
-
-      <p className="text-xs text-gray-400 mt-2">
-        CTRL-IMIFE-{codigo}
-      </p>
-
-    </div>
-  );
-}
+export default QrEquipamiento;

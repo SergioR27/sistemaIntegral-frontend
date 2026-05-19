@@ -37,13 +37,7 @@ export type Field = {
   showPreview?: boolean;
   allowDeleteFile?: boolean;
   disabled?: boolean;
-};
-
-type FormValues = Record<string, any>;
-
-type SubmitResponse = {
-  success: boolean;
-  message?: string;
+  maxLength?: number;
 };
 
 type FormProps = {
@@ -119,6 +113,22 @@ export default function Form({
   const [openAutocomplete, setOpenAutocomplete] = useState<Record<string, boolean>>({});
   const formRef = useRef<HTMLFormElement>(null);
 
+  const formatMacAddress = (value: string) => {
+    const limpio = value.replace(/[^a-fA-F0-9]/g, "").toUpperCase().slice(0, 12);
+    const grupos = limpio.match(/.{1,2}/g) || [];
+    return grupos.join(":");
+  };
+
+  const getInputValue = (field: Field) => {
+    const actualValue = formValues?.[field.name];
+
+    if (field.name === "mac_ethernet" || field.name === "mac_wifi") {
+      return formatMacAddress(String(actualValue ?? defaultValues?.[field.name] ?? ""));
+    }
+
+    return actualValue ?? defaultValues?.[field.name] ?? "";
+  };
+
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -191,9 +201,17 @@ export default function Form({
             type={field.type}
             name={field.name}
             placeholder={field.placeholder}
-            defaultValue={defaultValues?.[field.name] ?? ""}
+            value={getInputValue(field)}
             required={field.required}
-            onChange={(e) => handleChange(field.name, e.target.value)}
+            maxLength={field.maxLength}
+            onChange={(e) => {
+              const nextValue =
+                field.name === "mac_ethernet" || field.name === "mac_wifi"
+                  ? formatMacAddress(e.target.value)
+                  : e.target.value;
+
+              handleChange(field.name, nextValue);
+            }}
             disabled={field.disabled}
           />
         );

@@ -9,6 +9,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { CheckCircle, XCircle, Info, Trash2, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 type AlertType = "success" | "error" | "info" | "delete" | "warning";
 
@@ -17,6 +18,12 @@ type AlertsProps = {
   type: AlertType;
   title: string;
   message: any;
+  requireInput?: boolean;
+  inputLabel?: string;
+  inputPlaceholder?: string;
+  inputValue?: string;
+  confirmText?: string;
+  onInputChange?: (value: string) => void;
   onConfirm?: () => void;
   onCancel?: () => void;
 };
@@ -26,6 +33,12 @@ export default function Alerts({
   type,
   title,
   message,
+  requireInput = false,
+  inputLabel = "",
+  inputPlaceholder = "",
+  inputValue = "",
+  confirmText = "",
+  onInputChange,
   onConfirm,
   onCancel,
 }: AlertsProps) {
@@ -54,6 +67,7 @@ export default function Alerts({
   };
 
   const current = styles[type];
+  const isConfirmDisabled = requireInput && !inputValue.trim();
 
   return (
     <AlertDialog open={open}>
@@ -70,6 +84,23 @@ export default function Alerts({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
+        {requireInput && (
+          <div className="space-y-2">
+            {inputLabel && (
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                {inputLabel}
+              </label>
+            )}
+
+            <Input
+              value={inputValue}
+              onChange={(e) => onInputChange?.(e.target.value)}
+              placeholder={inputPlaceholder}
+              className="w-full"
+            />
+          </div>
+        )}
+
         <AlertDialogFooter className="flex justify-center gap-3 pt-4">
           {type === "delete" && (
             <AlertDialogCancel onClick={onCancel}>
@@ -79,9 +110,10 @@ export default function Alerts({
 
           <AlertDialogAction
             onClick={onConfirm}
+            disabled={isConfirmDisabled}
             className={`text-white ${current.button}`}
           >
-            {type === "delete" ? "Eliminar" : "Aceptar"}
+            {confirmText || (type === "delete" ? "Eliminar" : "Aceptar")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

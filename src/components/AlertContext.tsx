@@ -3,12 +3,28 @@ import Alerts from "@/components/Alerts";
 
 type AlertType = "success" | "error" | "info" | "delete" | "warning";
 
+type AlertInputOptions = {
+  requireInput: true;
+  inputLabel?: string;
+  inputPlaceholder?: string;
+  confirmText?: string;
+};
+
+type AlertResult = {
+  confirmed: boolean;
+  value: string;
+};
+
 type AlertContextType = {
-  showAlert: (
-    type: AlertType,
-    message: string,
-    title?: string
-  ) => Promise<boolean>;
+  showAlert: {
+    (type: AlertType, message: string, title?: string): Promise<boolean>;
+    (
+      type: AlertType,
+      message: string,
+      title: string,
+      options: AlertInputOptions
+    ): Promise<AlertResult>;
+  };
 };
 
 const AlertContext = createContext<AlertContextType | null>(null);
@@ -19,36 +35,86 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
     type: "info" as AlertType,
     title: "",
     message: "",
+    requireInput: false,
+    inputLabel: "",
+    inputPlaceholder: "",
+    inputValue: "",
+    confirmText: "",
   });
 
   const [resolver, setResolver] = useState<
-    ((value: boolean) => void) | null
+    ((value: boolean | AlertResult) => void) | null
   >(null);
 
-  const showAlert = (
+  function showAlert(
     type: AlertType,
     message: string,
-    title = ""
-  ) => {
-    return new Promise<boolean>((resolve) => {
+    title?: string
+  ): Promise<boolean>;
+  function showAlert(
+    type: AlertType,
+    message: string,
+    title: string,
+    options: AlertInputOptions
+  ): Promise<AlertResult>;
+  function showAlert(
+    type: AlertType,
+    message: string,
+    title = "",
+    options?: AlertInputOptions
+  ) {
+    return new Promise<boolean | AlertResult>((resolve) => {
       setAlertState({
         open: true,
         type,
         title,
         message,
+        requireInput: options?.requireInput ?? false,
+        inputLabel: options?.inputLabel ?? "",
+        inputPlaceholder: options?.inputPlaceholder ?? "",
+        inputValue: "",
+        confirmText: options?.confirmText ?? "",
       });
 
       setResolver(() => resolve);
     });
-  };
+  }
 
   const handleConfirm = () => {
-    setAlertState((prev) => ({ ...prev, open: false }));
+    const inputValue = alertState.inputValue.trim();
+
+    setAlertState((prev) => ({
+      ...prev,
+      open: false,
+      inputValue: "",
+    }));
+
+    if (alertState.requireInput) {
+      resolver?.({
+        confirmed: true,
+        value: inputValue,
+      });
+      return;
+    }
+
     resolver?.(true);
   };
 
   const handleCancel = () => {
-    setAlertState((prev) => ({ ...prev, open: false }));
+    setAlertState((prev) => ({
+      ...prev,
+      open: false,
+      inputValue: "",
+    }));
+
+    if (alertState.requireInput) {
+      resolver?.({
+        confirmed: false,
+        value: "",
+      });
+      return;
+    }
+
     resolver?.(false);
   };
 
@@ -61,6 +127,14 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
         type={alertState.type}
         title={alertState.title}
         message={alertState.message}
+        requireInput={alertState.requireInput}
+        inputLabel={alertState.inputLabel}
+        inputPlaceholder={alertState.inputPlaceholder}
+        inputValue={alertState.inputValue}
+        confirmText={alertState.confirmText}
+        onInputChange={(value) =>
+          setAlertState((prev) => ({ ...prev, inputValue: value }))
+        }
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

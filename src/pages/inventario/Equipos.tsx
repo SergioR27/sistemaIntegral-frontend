@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import Form from "@/components/Form";
+import Form, { type Field } from "@/components/Form";
 import Header from "@/components/Header";
 import Wizard from "@/components/Wizard";
 import DataTable from "@/components/DataTable";
@@ -12,8 +12,18 @@ import QrEquipamiento from "./QrEquipamiento";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Column } from "@/components/DataTable";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Monitor, Cpu, Keyboard, Mouse, Laptop, PcCase, Printer, Cable, BatteryCharging, LaptopMinimal } from "lucide-react";
 import DetallesGrupo from "./DetallesGrupos";
+import { exportDispositivosExcel } from "@/excel/exportDispositivosExcel";
 
 type Dispositivos = {
   id_dispositivo: number;
@@ -58,7 +68,6 @@ export default function Equipos() {
   const [openModal, setOpenModal] = useState(false);
   const [tipoEquipamientos, setTipoEquipamientos] = useState<TipoEquipo[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
-  const [dispositivoEditando, setDispositivoEditando] = useState<Dispositivos | null>(null);
   const [componentesData, setComponentesData] = useState<any>({});
   const [personal, setPersonal] = useState<Empleados[]>([]);
   const [asignacionData, setAsignacionData] = useState<any>({});
@@ -71,6 +80,8 @@ export default function Equipos() {
   const [validateAsignacion, setValidateAsignacion] = useState<() => boolean>(() => () => true);
   const [dispositivos, setDispositivos] = useState<Dispositivos[]>([]);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<number | null>(null);
+  const [openExcelModal, setOpenExcelModal] = useState(false);
+  const [filtroExcel, setFiltroExcel] = useState("TODOS");
 
   const getIconByTipo = (tipo?: string) => {
     switch (tipo?.toUpperCase()) {
@@ -97,6 +108,14 @@ export default function Equipos() {
     }
   };
 
+  const cargarDispositivos = async () => {
+    const res = await obtenerDispositivos();
+
+    if (res.success) {
+      setDispositivos(res.data);
+    }
+  };
+
 
   // CARGA DATOS
   useEffect(() => {
@@ -116,9 +135,7 @@ export default function Equipos() {
       if (res.success) setCodigo(res.data);
     });
 
-    obtenerDispositivos().then((res) => {
-      if (res.success) setDispositivos(res.data);
-    });
+    cargarDispositivos();
   }, []);
 
   const tipos_flujo = {
@@ -155,7 +172,7 @@ export default function Equipos() {
   const esDirecto = (id: number) => tipos_flujo.DIRECTO.includes(id);
 
   const camposFormulario = useMemo(() => {
-    const campos = [
+    const campos: Field[] = [
       {
         name: "sid_tipo_equipamiento", // 🔥 FIX
         label: "Tipo Equipamiento",
@@ -184,8 +201,8 @@ export default function Equipos() {
     // SOLO SI ES GRUPO
     if (tipoSeleccionado && esGrupo(tipoSeleccionado)) {
       campos.push(
-        { name: "mac_ethernet", label: "Mac Ethernet", placeholder: "00:00:00:00:00:00", type: "text", required: false },
-        { name: "mac_wifi", label: "Mac WiFi", placeholder: "00:00:00:00:00:00", type: "text", required: false },
+        { name: "mac_ethernet", label: "Mac Ethernet", placeholder: "00:00:00:00:00:00", type: "text", required: false, maxLength: 17 },
+        { name: "mac_wifi", label: "Mac WiFi", placeholder: "00:00:00:00:00:00", type: "text", required: false, maxLength: 17 },
         { name: "procesador", label: "Procesador", placeholder: "", type: "text", required: false },
         { name: "ram", label: "RAM", placeholder: "GB", type: "number", required: false },
         { name: "disco_duro", label: "Disco Duro", placeholder: "GB", type: "number", required: false }
@@ -203,7 +220,7 @@ export default function Equipos() {
     9: ["CARGADOR"], // Mac
   };
 
-  const camposComponente = [
+  const camposComponente: Field[] = [
     {
       name: "sid_modelo",
       label: "Modelo",
@@ -459,8 +476,7 @@ export default function Equipos() {
 
       await showAlert("success", result.message, "Éxito");
 
-      const res = await obtenerDispositivos();
-      if (res.success) setDispositivos(res.data);
+      await cargarDispositivos();
 
 
 
@@ -532,7 +548,7 @@ export default function Equipos() {
       label: "Tipo",
       searchableValue: (p) => p.tipo?.nombre_tipo || "",
       render: (p) => (
-        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+        <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-primario rounded">
           {p.tipo?.nombre_tipo || "—"}
         </span>
       ),
@@ -559,7 +575,7 @@ export default function Equipos() {
       searchableValue: (p) =>
         formatGrupo(p.grupoDetalle?.[0]?.grupoEquipo?.numero_control),
       render: (p) => (
-        <span className="text-xs font-semibold text-primario">
+        <span className="text-xs font-semibold text-primario dark:text-white">
           {formatGrupo(p.grupoDetalle?.[0]?.grupoEquipo?.numero_control)}
         </span>
       ),
@@ -664,6 +680,67 @@ export default function Equipos() {
     };
   }, [dispositivos]);
 
+  const opcionesExcel = [
+    {
+      value: "TODOS",
+      label: "General",
+      description: "Incluye todos los dispositivos, también los de baja.",
+    },
+    {
+      value: "BAJA",
+      label: "Solo bajas",
+      description: "Descarga únicamente los dispositivos en baja.",
+    },
+    {
+      value: "DISPONIBLE",
+      label: "Solo disponibles",
+      description: "Descarga únicamente los dispositivos disponibles.",
+    },
+    {
+      value: "ASIGNADO",
+      label: "Solo asignados",
+      description: "Descarga únicamente los dispositivos asignados.",
+    },
+  ];
+
+  const descargarExcelDispositivos = async () => {
+    const dispositivosFiltrados =
+      filtroExcel === "TODOS"
+        ? dispositivos
+        : dispositivos.filter((item) => item.estatus === filtroExcel);
+
+    if (dispositivosFiltrados.length === 0) {
+      await showAlert(
+        "warning",
+        "No hay dispositivos que coincidan con el filtro seleccionado.",
+        "Excel"
+      );
+      return;
+    }
+
+    const nombresArchivo: Record<string, string> = {
+      TODOS: "Dispositivos General",
+      BAJA: "Dispositivos Baja",
+      DISPONIBLE: "Dispositivos Disponibles",
+      ASIGNADO: "Dispositivos Asignados",
+    };
+
+    const titulosHoja: Record<string, string> = {
+      TODOS: "REPORTE GENERAL DE DISPOSITIVOS",
+      BAJA: "REPORTE DE DISPOSITIVOS EN BAJA",
+      DISPONIBLE: "REPORTE DE DISPOSITIVOS DISPONIBLES",
+      ASIGNADO: "REPORTE DE DISPOSITIVOS ASIGNADOS",
+    };
+
+    await exportDispositivosExcel(
+      dispositivosFiltrados,
+      nombresArchivo[filtroExcel] || "Dispositivos",
+      titulosHoja[filtroExcel] || "REPORTE DE DISPOSITIVOS"
+    );
+
+    setOpenExcelModal(false);
+  };
+
 
   return (
     <div className="p-0 sm:p-4 lg:p-8 max-w-[2200px] mx-auto w-full">
@@ -706,7 +783,66 @@ export default function Equipos() {
                 setGrupoSeleccionado(idGrupo);
               }
             }}
+            showExcel
+            onExcel={() => {
+              setFiltroExcel("TODOS");
+              setOpenExcelModal(true);
+            }}
           />
+
+          <Dialog open={openExcelModal} onOpenChange={setOpenExcelModal}>
+            <DialogContent className="sm:max-w-xl dark:bg-oscuro-relleno dark:border-oscuro-redondear">
+              <DialogHeader>
+                <DialogTitle>Descargar Excel de dispositivos</DialogTitle>
+                <DialogDescription>
+                  Selecciona qué información quieres exportar antes de generar el archivo.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3">
+                {opcionesExcel.map((opcion) => {
+                  const seleccionado = filtroExcel === opcion.value;
+
+                  return (
+                    <button
+                      key={opcion.value}
+                      type="button"
+                      onClick={() => setFiltroExcel(opcion.value)}
+                      className={`w-full rounded-xl border p-4 text-left transition ${
+                        seleccionado
+                          ? "border-emerald-700 bg-emerald-50 dark:bg-emerald-950/20"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-500"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {opcion.label}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                        {opcion.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenExcelModal(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-emerald-700 text-white hover:bg-emerald-800"
+                  onClick={descargarExcelDispositivos}
+                >
+                  Descargar archivo
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mt-5">
             {/* card 1 */}
@@ -823,7 +959,10 @@ export default function Equipos() {
         <div className="space-y-6">
           <DetallesGrupo
             idGrupo={grupoSeleccionado}
-            onBack={() => setGrupoSeleccionado(null)}
+            onBack={async () => {
+              setGrupoSeleccionado(null);
+              await cargarDispositivos();
+            }}
           />
         </div>
       )}

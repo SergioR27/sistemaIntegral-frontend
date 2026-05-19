@@ -58,7 +58,11 @@ export default function Sidebar({
         <Section title="Inventario">
           <SidebarLink to="/inventario/catalogo" icon="book" label="Catálogo" />
           <SidebarLink to="/inventario/equipos" icon="devices" label="Equipos" />
-          <SidebarLink to="/inventario/asignacion" icon="assignment_add" label="Asignación" />
+          {/* <SidebarLink to="/inventario/asignacion" icon="assignment_add" label="Asignación" /> */}
+        </Section>
+        <Section title="Tickets">
+          <SidebarLink to="/tickets/servicio" icon="construction" label="Servicios" />
+          {/* <SidebarLink to="/inventario/asignacion" icon="assignment_add" label="Asignación" /> */}
         </Section>
         <Section title="SIC">
           <SidebarLink to="/sic/oficios" icon="description" label="Oficios" />
