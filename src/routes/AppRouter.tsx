@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import AuthLayout from "@/layouts/AuthLayout";
 import Layout from "../layouts/Layout";
 import Login from "@/pages/auth/Login";
@@ -23,25 +24,31 @@ export default function AppRouter() {
         </Route>
 
         {/* DASHBOARD */}
-        <Route element={<Layout />}>
-          <Route path="/areas" element={<Areas />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/organigrama" element={<Organigrama />} />
-          <Route path="/personal" element={<Personal />} />
-          <Route path="/sic">
-            <Route path="oficios" element={<Oficios />} />
-            <Route path="registros" element={<Registros />} />
-          </Route>
-          <Route path="/tickets">
-            <Route path="servicio" element={<Servicio />} />
-          </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
 
-          <Route path="/inventario">
-            <Route path="catalogo" element={<Catalogos />} />
-            <Route path="equipos" element={<Equipos />} />
-            {/* <Route path="asignacion" element={<Asignacion />} /> */}
+            <Route path="/areas" element={<Areas />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/organigrama" element={<Organigrama />} />
+            <Route path="/personal" element={<Personal />} />
+
+            <Route path="/sic">
+              <Route path="oficios" element={<Oficios />} />
+              <Route path="registros" element={<Registros />} />
+            </Route>
+
+            <Route path="/tickets">
+              <Route path="servicio" element={<Servicio />} />
+            </Route>
+
+            <Route path="/inventario">
+              <Route path="catalogo" element={<Catalogos />} />
+              <Route path="equipos" element={<Equipos />} />
+              {/* <Route path="asignacion" element={<Asignacion />} /> */}
+            </Route>
           </Route>
         </Route>
+
 
       </Routes>
     </BrowserRouter>
